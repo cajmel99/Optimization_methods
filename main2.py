@@ -50,7 +50,7 @@ class CSVData:
 class GeneticAlgorithm:
     """ Class implementing a basic genetic algorithm """
     def __init__(self):
-        self.data = CSVData('./config.csv', './scheduleMatrix.csv', './matchMatrix.csv')
+        self.data = CSVData('./data/config.csv', './data/scheduleMatrix.csv', './data/matchMatrix.csv')
         self.initialize_parameters()
 
     def initialize_parameters(self):
@@ -98,7 +98,7 @@ class GeneticAlgorithm:
 
 
 # Test CSV class
-data = CSVData('./config.csv', './scheduleMatrix.csv', './matchMatrix.csv')
+data = CSVData('./data/config.csv', './data/scheduleMatrix.csv', './data/matchMatrix.csv')
 data.print_data_summary()
 
 # Usage
