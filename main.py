@@ -76,7 +76,7 @@ class CSVData:
 class greedyAlghoritm:
     def __init__(self):
         print("-" * 41, "Greedy Alghoritm","-" * 41)
-        self.data = CSVData('./config.csv','./scheduleMatrix.csv','./matchMatrix.csv')
+        self.data = CSVData('./data/config.csv','./data/scheduleMatrix.csv','./data/matchMatrix.csv')
 
         self.scheduleMatrix = self.data.scheduleMatrixValues
         self.matchMatrix = self.data.matchMatrixValues
@@ -98,7 +98,7 @@ class greedyAlghoritm:
         print(table)
         self.result = [self.rowIndex[i:i+1] + row for i, row in enumerate(self.result)]
         self.columnHeader.insert(0, 'Start point')
-        self.data.writeCSVArray('./result_greedy.csv', self.result, self.columnHeader)
+        self.data.writeCSVArray('./data/result_greedy.csv', self.result, self.columnHeader)
 
     def run(self):
         start = list(range(len(self.matchMatrix)))
@@ -147,7 +147,7 @@ class greedyAlghoritm:
 
 class geneticAlghoritm:
     def __init__(self):
-        self.data = CSVData('./config.csv','./scheduleMatrix.csv','./matchMatrix.csv')
+        self.data = CSVData('./data/config.csv','./data/scheduleMatrix.csv','./data/matchMatrix.csv')
         
         self.scheduleMatrix = self.data.scheduleMatrixValues
         self.matchMatrix = self.data.matchMatrixValues
@@ -289,7 +289,7 @@ class geneticAlghoritm:
         #print("Average:", avgFitness)
         
         populationFitness = [maxFitness, minFitness, avgFitness]
-        self.data.writeCSV("./results.csv", populationFitness)
+        self.data.writeCSV("./data/results.csv", populationFitness)
 
         return float(maxFitness), bestIndividual
     
