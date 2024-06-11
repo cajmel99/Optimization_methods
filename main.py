@@ -1,6 +1,8 @@
 import csv
 import pandas as pd
 import random
+from time import process_time 
+from time import process_time_ns 
 
 #Table display settings
 pd.set_option('display.max_columns', None)
@@ -101,7 +103,11 @@ class greedyAlghoritm:
 
         self.result = []
 
+        timeStart = process_time_ns()
         self.run()
+        timeStop = process_time_ns()
+        print(timeStart, timeStop)
+        print("Timer:", timeStop - timeStart)
 
         for _ in range(len(self.rowIndex)):
             self.rowIndexName.append(self.rowNames[self.rowIndex[_]])
@@ -173,7 +179,11 @@ class geneticAlghoritm:
         self.bestFitness = -float("inf")
         self.bestIndividual = []
         
+        timeStart = process_time_ns()
         self.run()
+        timeStop = process_time_ns()
+        print(timeStart, timeStop)
+        print("Timer:", timeStop - timeStart)
 
     def run(self):
         firstPopulation = self.generatePopulation(self.populations)
@@ -336,8 +346,12 @@ class randomAlghoritm:
         
         self.columnHeader = self.data.matchMatrix[0][1:]
         self.columnHeader.append('Fitness')
+        timeStart = process_time()
         for _ in range(iterations):
             self.randomGenerator(self.scheduleMatrix)
+        timeStop = process_time()
+
+        print("Timer", timeStop - timeStart)
 
         table = pd.DataFrame(self.result,columns=self.columnHeader)
         table.index.name = 'Iteration'
@@ -380,6 +394,7 @@ class randomAlghoritm:
                 
         return fitnessSum
     
-#greedyAlghoritm()
+
+greedyAlghoritm()
 #geneticAlghoritm()
-randomAlghoritm(10000)
+#randomAlghoritm(10000)
