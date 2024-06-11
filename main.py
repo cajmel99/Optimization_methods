@@ -35,6 +35,7 @@ class CSVData:
         self.printData(self.matchMatrix, self.matchMatrixFileName)
         
         self.hederWrited = False
+        self.hederWritedRows = False
 
     def readCsv(self, fileName):
         readedData = []
@@ -62,6 +63,17 @@ class CSVData:
                 writer = csv.writer(file, delimiter=',')
                 writer.writerow(['Max', 'Min', 'Avg'])
                 self.hederWrited = True
+
+        with open(fileName, mode='a', newline='') as file:
+            writer = csv.writer(file, delimiter=',')
+            writer.writerow(array)
+    
+    def writeCSVRows(self, fileName, header, array):
+        if self.hederWritedRows == False:
+            with open(fileName, mode='w', newline='') as file:
+                writer = csv.writer(file, delimiter=',')
+                writer.writerow(header)
+                self.hederWritedRows = True
 
         with open(fileName, mode='a', newline='') as file:
             writer = csv.writer(file, delimiter=',')
@@ -313,5 +325,61 @@ class geneticAlghoritm:
 
         return filteredArray
     
-greedyAlghoritm()
-geneticAlghoritm()
+class randomAlghoritm:
+    def __init__(self, iterations):
+        print("-" * 41, "Random generation","-" * 42, sep="")
+        self.data = CSVData('./data/config.csv','./data/scheduleMatrix.csv','./data/matchMatrix.csv')
+        
+        self.scheduleMatrix = self.data.scheduleMatrixValues
+        self.matchMatrix = self.data.matchMatrixValues
+        self.result = []
+        
+        self.columnHeader = self.data.matchMatrix[0][1:]
+        self.columnHeader.append('Fitness')
+        for _ in range(iterations):
+            self.randomGenerator(self.scheduleMatrix)
+
+        table = pd.DataFrame(self.result,columns=self.columnHeader)
+        table.index.name = 'Iteration'
+        #print(table)
+
+    def countOccurrences(self, array, value, day):
+        filteredArray = []
+        
+        for element in range(len(array)):
+            if array[element][day] == value:
+                filteredArray.append(element)
+            else:
+                filteredArray.append(-1)
+
+        return filteredArray 
+    
+    def randomGenerator(self, array):
+        result = []
+        schedule = self.countOccurrences(array, 1, 0)
+        if len(schedule) <= len(self.matchMatrix[0]):
+            for x in range(len(self.matchMatrix[0]) - len(schedule)):
+                schedule.append(-1)
+        
+        random.shuffle(schedule)
+        fitness = self.fitness(schedule)
+        for index in range(len(schedule)):
+            result.append(schedule[index])
+
+        result.append("{:.1f}".format(fitness))
+
+        self.data.writeCSVRows('./data/result_random.csv', self.columnHeader, result)
+        self.result.append(result)
+    
+    def fitness(self, array):
+        fitnessSum = 0.0
+        
+        for index, value in enumerate(array):
+            if value != -1:
+                fitnessSum += self.matchMatrix[value][index]
+                
+        return fitnessSum
+    
+#greedyAlghoritm()
+#geneticAlghoritm()
+randomAlghoritm(10000)
