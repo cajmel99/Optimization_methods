@@ -1,169 +1,6 @@
-import csv
-import pandas as pd
-import random
-from time import process_time 
-from time import process_time_ns 
+from load_data import *
 
-#Table display settings
-pd.set_option('display.max_columns', None)
-pd.set_option('display.expand_frame_repr', False)
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_colwidth', None)
-
-class CSVData:
-    def __init__(self, configFileName, scheduleMatrixFileName, matchMatrixFileName):    
-        self.configFileName = configFileName
-        self.scheduleMatrixFileName = scheduleMatrixFileName
-        self.matchMatrixFileName = matchMatrixFileName
-        
-        self.config = self.readCsv(self.configFileName)
-        self.configValue = [row[0:] for row in self.config]
-        del self.configValue[0]
-        self.configValue= [[float(value) for value in row] for row in self.configValue]
-        
-        self.scheduleMatrix = self.readCsv(self.scheduleMatrixFileName)
-        self.scheduleMatrixValues = [row[1:] for row in self.scheduleMatrix]
-        del self.scheduleMatrixValues[0]
-        self.scheduleMatrixValues= [[int(value) for value in row] for row in self.scheduleMatrixValues]
-        
-        self.matchMatrix = self.readCsv(self.matchMatrixFileName)
-        self.matchMatrixValues = [row[1:] for row in self.matchMatrix]
-        del self.matchMatrixValues[0]
-        self.matchMatrixValues= [[float(value) for value in row] for row in self.matchMatrixValues]
-        
-        print("-" * 100)
-        self.printData(self.config, self.configFileName)
-        self.printData(self.scheduleMatrix, self.scheduleMatrixFileName)
-        self.printData(self.matchMatrix, self.matchMatrixFileName)
-        
-        self.hederWrited = False
-        self.hederWritedRows = False
-
-    def readCsv(self, fileName):
-        readedData = []
-        
-        with open(fileName, 'r') as file:
-            csvReader = csv.reader(file)
-            for row in csvReader:
-                readedData.append(row)
-                
-        return readedData
-
-    def printData(self, array, fileName):
-        print("File:", fileName[2:],)
-        print("Rows loaded:", len(array)-1, "\n")
-        columnHeader = array[0]
-        data = array[1:]
-        
-        table = pd.DataFrame(data, columns=columnHeader)
-        print(table)
-        print("-" * 100)
-    
-    def writeCSV(self, fileName, array):
-        if self.hederWrited == False:
-            with open(fileName, mode='w', newline='') as file:
-                writer = csv.writer(file, delimiter=',')
-                writer.writerow(['Max', 'Min', 'Avg'])
-                self.hederWrited = True
-
-        with open(fileName, mode='a', newline='') as file:
-            writer = csv.writer(file, delimiter=',')
-            writer.writerow(array)
-    
-    def writeCSVRows(self, fileName, header, array):
-        if self.hederWritedRows == False:
-            with open(fileName, mode='w', newline='') as file:
-                writer = csv.writer(file, delimiter=',')
-                writer.writerow(header)
-                self.hederWritedRows = True
-
-        with open(fileName, mode='a', newline='') as file:
-            writer = csv.writer(file, delimiter=',')
-            writer.writerow(array)
-    
-    def writeCSVArray(self, fileName, array, header):
-        with open(fileName, mode='w', newline='') as file:
-            writer = csv.writer(file, delimiter=',')
-            writer.writerow(header)
-            writer.writerows(array)
-        
-class greedyAlghoritm:
-    def __init__(self):
-        print("-" * 41, "Greedy Alghoritm","-" * 41)
-        self.data = CSVData('./data/config.csv','./data/scheduleMatrix.csv','./data/matchMatrix.csv')
-
-        self.scheduleMatrix = self.data.scheduleMatrixValues
-        self.matchMatrix = self.data.matchMatrixValues
-        
-        self.columnHeader = self.data.matchMatrix[0][1:]
-        self.columnHeader.append('Fitness')
-        self.rowNames = [row[0] for row in self.data.matchMatrix[1:]]
-        self.rowIndex = []
-        self.rowIndexName = []
-
-        self.result = []
-
-        timeStart = process_time_ns()
-        self.run()
-        timeStop = process_time_ns()
-        print(timeStart, timeStop)
-        print("Timer:", timeStop - timeStart)
-
-        for _ in range(len(self.rowIndex)):
-            self.rowIndexName.append(self.rowNames[self.rowIndex[_]])
-        table = pd.DataFrame(self.result,columns=self.columnHeader, index=self.rowIndexName)
-        table.index.name = 'Start point'
-        print(table)
-        self.result = [self.rowIndex[i:i+1] + row for i, row in enumerate(self.result)]
-        self.columnHeader.insert(0, 'Start point')
-        self.data.writeCSVArray('./data/result_greedy.csv', self.result, self.columnHeader)
-
-    def run(self):
-        start = list(range(len(self.matchMatrix)))
-        daySchedule = []
-        for _ in range(len(self.scheduleMatrix)):
-            daySchedule.append(self.scheduleMatrix[_][0])
-
-        indices = [index for index, value in enumerate(daySchedule) if value == 0]
-        for _ in indices:
-            start.remove(_)
-        
-        self.rowIndex = start
-
-        for i in range(len(start)):
-            matchedAssistant = []
-            used = []
-            for productionID in start:
-                bestTempFitness = 0
-                bestAssistant = None
-                for assistantID in range(len(self.matchMatrix[0])):
-                    tempFitness = self.matchMatrix[productionID][assistantID]
-                    if tempFitness > bestTempFitness and assistantID not in used:
-                        bestTempFitness = tempFitness
-                        bestAssistant = assistantID
-     
-                used.append(bestAssistant)
-                matchedAssistant.append([productionID, bestAssistant] )
-            
-            tMatchedAssistant = [-1] * len(self.matchMatrix[0])
-            for ProductionIndex in range(len(matchedAssistant)):
-                tMatchedAssistant[matchedAssistant[ProductionIndex][1]] = matchedAssistant[ProductionIndex][0]
-            tMatchedAssistant.append("{:.1f}".format(self.fitness(tMatchedAssistant)))
-            self.result.append(tMatchedAssistant)
-
-            start = start[1:] + [start[0]]
-        
-    def fitness(self, array):
-        fitnessSum = 0.0
-        
-        for index, value in enumerate(array):
-            if value != -1:
-                fitnessSum += self.matchMatrix[value][index]
-                
-        return fitnessSum
-
-
-class geneticAlghoritm:
+class geneticAlgorithm:
     def __init__(self):
         self.data = CSVData('./data/config.csv','./data/scheduleMatrix.csv','./data/matchMatrix.csv')
         
@@ -188,32 +25,39 @@ class geneticAlghoritm:
     def run(self):
         firstPopulation = self.generatePopulation(self.populations)
         self.bestFitness, self.bestIndividual = self.evalutaPopulation(firstPopulation)
+        print(f"----->First popoulation{firstPopulation}")
+        print(f"----->First besst, fitness, best individual{self.bestFitness, self.bestIndividual}")
         population = firstPopulation
         mutationCount = 0
         crossoverCount = 0
         
         for x in range(self.generations):
             newPopulation = []
-            for y in range(self.populations):
+            for _ in range(self.populations):
+                print('iiiii', _)
                 parent1 = self.selection(population)
+                print('kkkkkaaaaa', _)
                 parent2 = self.selection(population)
             
                 if random.random() < self.crossProbability:
                     newPopulation.append(self.crossover(parent1, parent2))
+                    print('New pop after krzyzowanie', newPopulation)
                     crossoverCount += 1
                 elif random.random() < self.mutationProbability:
                     newPopulation.append(self.mutation(parent1))
                     mutationCount += 1
                 else:
                     newPopulation.append(parent1)
-
+            print('dluggg', len(newPopulation))
             fitness, bestIndividual = self.evalutaPopulation(newPopulation)
+            print(f"--->Fitnesss {fitness}, {self.bestFitness}")
 
             if fitness > self.bestFitness:
                 self.bestFitness = fitness
                 self.bestIndividual = bestIndividual
+                population = newPopulation
 
-            population = newPopulation
+            #population = newPopulation
 
         print("Best fitness:", self.bestFitness)
         print("Best individual:", self.bestIndividual)
@@ -221,13 +65,23 @@ class geneticAlghoritm:
     def selection(self, population):
         bestFitness = -float("inf")
         bestIndividual = []
-        for x in range(self.selections):
-            index = random.randint(0,len(self.matchMatrix[0]))
+        for x in range(self.selections): # Wybieramy 5 najlepszych osobnikow
+            #index = random.randint(0,len(self.matchMatrix[0]))
+            matrix = self.matchMatrix[0] # Wartosci funckji dobroci
+            #print('matrixxxx', population)
+            #print('leeeeeee', len(population), 'xxxxxxx', x)
+            index = random.randint(0, len(population)-1) # Losujemy osobnika z populacji
+            #print('indexxxxx', index)
+            #print('Wylosowany osobnik', population[index], 'i jego fitness->')
+            #print(population[x])
             fitness = self.fitness(population[index])
+            #print('fitnesss', fitness)
+            #print(bestFitness)
+
             if fitness > bestFitness:
                 bestFitness = fitness
-                bestIndividual = population[x]
-        
+                bestIndividual = population[index] #tu blad bylo population[x]
+        #print('Besties', bestIndividual, bestFitness)
         return bestIndividual
     
     def mutation(self, individual):
@@ -297,12 +151,18 @@ class geneticAlghoritm:
         evaluatedPopulation = []
 
         for x in range(len(population)):
-            fitness = self.fitness(population[x])
+            print('pop', population)
+            print("x", x)
+            fitness = self.fitness(population[x]) 
+            print("fitness for x", fitness)
             pair = (fitness, population[x])
+            print("paaair", pair)
             evaluatedPopulation.append(pair)
 
         bestIndividual = max(evaluatedPopulation, key=lambda x: x[0])[1]
+        print("beeeee", bestIndividual)
         maxFitness = "{:.1f}".format(max(evaluatedPopulation, key=lambda x: x[0])[0])
+        print("maaaaa", maxFitness)
         minFitness = "{:.1f}".format(min(evaluatedPopulation, key=lambda x: x[0])[0])
         avgFitness = "{:.2f}".format(sum(pair[0] for pair in evaluatedPopulation) / len(evaluatedPopulation))
 
@@ -395,6 +255,5 @@ class randomAlghoritm:
         return fitnessSum
     
 
-greedyAlghoritm()
-#geneticAlghoritm()
-#randomAlghoritm(10000)
+geneticAlgorithm()
+#randomAlgorithm(10000)
