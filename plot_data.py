@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Load the data
-file_path = '/Users/marysia/Optimization_methods/data/results.csv'
+file_path = './data/results.csv'
 df = pd.read_csv(file_path)
 
 
