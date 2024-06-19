@@ -64,7 +64,7 @@ class greedyAlghoritm:
                 tMatchedAssistant[matchedAssistant[ProductionIndex][1]] = matchedAssistant[ProductionIndex][0]
             tMatchedAssistant.append("{:.1f}".format(self.fitness(tMatchedAssistant)))
             self.result.append(tMatchedAssistant)
-
+            print("----------------------------------")
             start = start[1:] + [start[0]]
         
     def fitness(self, array):
@@ -73,7 +73,10 @@ class greedyAlghoritm:
         for index, value in enumerate(array):
             if value != -1:
                 fitnessSum += self.matchMatrix[value][index]
-                
+                print(self.matchMatrix[value][index])
+                print(array[index])
+                print("--------------------")
+
         return fitnessSum
 
 greedyAlghoritm()

@@ -34,21 +34,17 @@ class geneticAlgorithm:
         for x in range(self.generations):
             newPopulation = []
             for _ in range(self.populations):
-                print('iiiii', _)
                 parent1 = self.selection(population)
-                print('kkkkkaaaaa', _)
                 parent2 = self.selection(population)
             
                 if random.random() < self.crossProbability:
                     newPopulation.append(self.crossover(parent1, parent2))
-                    print('New pop after krzyzowanie', newPopulation)
                     crossoverCount += 1
                 elif random.random() < self.mutationProbability:
                     newPopulation.append(self.mutation(parent1))
                     mutationCount += 1
                 else:
                     newPopulation.append(parent1)
-            print('dluggg', len(newPopulation))
             fitness, bestIndividual = self.evalutaPopulation(newPopulation)
             print(f"--->Fitnesss {fitness}, {self.bestFitness}")
 
@@ -57,8 +53,6 @@ class geneticAlgorithm:
                 self.bestIndividual = bestIndividual
                 population = newPopulation
 
-            #population = newPopulation
-
         print("Best fitness:", self.bestFitness)
         print("Best individual:", self.bestIndividual)
             
@@ -66,22 +60,13 @@ class geneticAlgorithm:
         bestFitness = -float("inf")
         bestIndividual = []
         for x in range(self.selections): # Wybieramy 5 najlepszych osobnikow
-            #index = random.randint(0,len(self.matchMatrix[0]))
             matrix = self.matchMatrix[0] # Wartosci funckji dobroci
-            #print('matrixxxx', population)
-            #print('leeeeeee', len(population), 'xxxxxxx', x)
             index = random.randint(0, len(population)-1) # Losujemy osobnika z populacji
-            #print('indexxxxx', index)
-            #print('Wylosowany osobnik', population[index], 'i jego fitness->')
-            #print(population[x])
             fitness = self.fitness(population[index])
-            #print('fitnesss', fitness)
-            #print(bestFitness)
 
             if fitness > bestFitness:
                 bestFitness = fitness
-                bestIndividual = population[index] #tu blad bylo population[x]
-        #print('Besties', bestIndividual, bestFitness)
+                bestIndividual = population[index]
         return bestIndividual
     
     def mutation(self, individual):
@@ -118,21 +103,13 @@ class geneticAlgorithm:
             
         return cross
         
-    def randomGenerator(self, array):
-        #print("-" * 41, "Random generation","-" * 42, sep="")
-        
+    def randomGenerator(self, array):        
         schedule = self.countOccurrences(array, 1, 0)
         if len(schedule) <= len(self.matchMatrix[0]):
             for x in range(len(self.matchMatrix[0]) - len(schedule)):
                 schedule.append(-1)
         
         random.shuffle(schedule)
-        
-        #table = pd.DataFrame([schedule], columns=self.matchMatrixHeader)
-        #print(table)
-        
-        #fitness = self.fitness(schedule)
-        #print("Match =", fitness)
         
         return schedule
     
@@ -142,33 +119,21 @@ class geneticAlgorithm:
         for x in range(populationSize):
             population.append(self.randomGenerator(self.scheduleMatrix))
         
-        #table = pd.DataFrame(population, columns=self.matchMatrixHeader)
-        #print(table)
-        
         return population
 
     def evalutaPopulation(self, population):
         evaluatedPopulation = []
 
         for x in range(len(population)):
-            print('pop', population)
-            print("x", x)
             fitness = self.fitness(population[x]) 
-            print("fitness for x", fitness)
             pair = (fitness, population[x])
-            print("paaair", pair)
             evaluatedPopulation.append(pair)
 
         bestIndividual = max(evaluatedPopulation, key=lambda x: x[0])[1]
-        print("beeeee", bestIndividual)
+
         maxFitness = "{:.1f}".format(max(evaluatedPopulation, key=lambda x: x[0])[0])
-        print("maaaaa", maxFitness)
         minFitness = "{:.1f}".format(min(evaluatedPopulation, key=lambda x: x[0])[0])
         avgFitness = "{:.2f}".format(sum(pair[0] for pair in evaluatedPopulation) / len(evaluatedPopulation))
-
-        #print("Maximum:", maxFitness)
-        #print("Minimum:", minFitness)
-        #print("Average:", avgFitness)
         
         populationFitness = [maxFitness, minFitness, avgFitness]
         self.data.writeCSV("./data/results.csv", populationFitness)
@@ -215,7 +180,7 @@ class randomAlghoritm:
 
         table = pd.DataFrame(self.result,columns=self.columnHeader)
         table.index.name = 'Iteration'
-        #print(table)
+        print(table)
 
     def countOccurrences(self, array, value, day):
         filteredArray = []
