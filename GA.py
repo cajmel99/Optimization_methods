@@ -36,22 +36,26 @@ class geneticAlgorithm:
             for _ in range(self.populations):
                 parent1 = self.selection(population)
                 parent2 = self.selection(population)
-            
+                newIndividual = None
                 if random.random() < self.crossProbability:
-                    newPopulation.append(self.crossover(parent1, parent2))
+                    newIndividual = self.crossover(parent1, parent2)
                     crossoverCount += 1
-                elif random.random() < self.mutationProbability:
-                    newPopulation.append(self.mutation(parent1))
-                    mutationCount += 1
                 else:
-                    newPopulation.append(parent1)
+                    newIndividual = parent1.copy()
+
+                if random.random() < self.mutationProbability:
+                    self.mutation(newIndividual)
+                    mutationCount += 1
+
+                newPopulation.append(newIndividual)
+
             fitness, bestIndividual = self.evalutaPopulation(newPopulation)
             print(f"--->Fitnesss {fitness}, {self.bestFitness}")
 
             if fitness > self.bestFitness:
                 self.bestFitness = fitness
                 self.bestIndividual = bestIndividual
-                population = newPopulation
+            population = newPopulation
 
         print("Best fitness:", self.bestFitness)
         print("Best individual:", self.bestIndividual)
@@ -60,7 +64,6 @@ class geneticAlgorithm:
         bestFitness = -float("inf")
         bestIndividual = []
         for x in range(self.selections): # Wybieramy 5 najlepszych osobnikow
-            matrix = self.matchMatrix[0] # Wartosci funckji dobroci
             index = random.randint(0, len(population)-1) # Losujemy osobnika z populacji
             fitness = self.fitness(population[index])
 
